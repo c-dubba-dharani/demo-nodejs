@@ -12,7 +12,7 @@ router.post("/", async (req, res) => {
   }
 });
 
-//read user
+//read users
 router.get("/userList", async (req, res) => {
   try {
     const users = await User.find({});
@@ -38,11 +38,20 @@ router.get("/:id", async (req, res) => {
 
 //update user by id
 router.patch("/:id", async (req, res) => {
+  const updates = Object.keys(req.body);
+  const allowedUpdates = ["name", "email", "password", "isActive"];
+  const isValidUpdate = updates.every((update) =>
+    allowedUpdates.includes(update)
+  );
+  if (!isValidUpdate) {
+    res.status("400").send({ error: "Invalid Updates!" });
+  }
   try {
-    const user = await User.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
+    const user = await User.findById(req.params.id);
+    updates.forEach((update) => (user[update] = req.body[update]));
+    await user.save();
+
+    //const user = await User.findByIdAndUpdate(req.params.id, req.body, {new: true,runValidators: true,});
 
     if (!user) {
       return res.status(404).send();
@@ -66,6 +75,20 @@ router.delete("/:id", async (req, res) => {
     res.send(user);
   } catch (e) {
     res.status(400).send(e);
+  }
+});
+
+//filter users by isActive
+router.get("/", async (req, res) => {
+  const query = {};
+  if (req.query.isActive) {
+    query.isActive = req.query.isActive === "true";
+  }
+  try {
+    const users = await User.find(query);
+    res.send(users);
+  } catch (error) {
+    res.send(error);
   }
 });
 module.exports = router;
