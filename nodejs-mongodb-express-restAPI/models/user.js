@@ -9,6 +9,7 @@ const userSchema = new mongoose.Schema(
     },
     email: {
       type: String,
+      unique: true,
       required: true,
       lowercase: true,
       validate(value) {
@@ -30,6 +31,7 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+//hash the plain text password before saving
 userSchema.pre("save", async function (next) {
   const user = this;
   if (user.isModified("password")) {

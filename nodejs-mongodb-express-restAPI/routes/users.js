@@ -23,7 +23,7 @@ router.get("/userList", async (req, res) => {
 });
 
 //read user -find by id
-router.get("/:id", async (req, res) => {
+router.get("/findUserById/:id", async (req, res) => {
   const _id = req.params.id;
   try {
     const users = await User.findById(_id);
@@ -79,13 +79,28 @@ router.delete("/:id", async (req, res) => {
 });
 
 //filter users by isActive
-router.get("/", async (req, res) => {
+router.get("/filterByStatus", async (req, res) => {
   const query = {};
   if (req.query.isActive) {
     query.isActive = req.query.isActive === "true";
   }
   try {
     const users = await User.find(query);
+    res.send(users);
+  } catch (error) {
+    res.send(error);
+  }
+});
+
+//search
+router.get("/search", async (req, res) => {
+  const match = {};
+  const search = req.query.name;
+  if (search) {
+    match.name = { $regex: search, $options: "i" };
+  }
+  try {
+    const users = await User.find(match);
     res.send(users);
   } catch (error) {
     res.send(error);
