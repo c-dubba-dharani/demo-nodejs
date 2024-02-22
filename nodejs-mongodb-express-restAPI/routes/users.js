@@ -106,4 +106,24 @@ router.get("/search", async (req, res) => {
     res.send(error);
   }
 });
+
+//pagination and sorting
+router.get("/getUsers", async (req, res) => {
+  const page = req.query.page - 1;
+  const limit = req.query.limit;
+  const sortBy = {};
+  if (req.query.sortBy) {
+    const parts = req.query.sortBy.split(":");
+    sortBy[parts[0]] = parts[1] === "desc" ? -1 : 1;
+  }
+  try {
+    let users = await User.find({})
+      .sort(sortBy)
+      .skip(page * limit)
+      .limit(limit);
+    res.send(users);
+  } catch (error) {
+    res.send(error);
+  }
+});
 module.exports = router;
